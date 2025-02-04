@@ -3,17 +3,16 @@ import soundfile as sf
 import matplotlib.pyplot as plt
 
 
-carrier_freq = 2000  # Fréquence de la porteuse (Hz)
-bit_rate = 100       # Débit binaire (bits/s)
+bit_rate = 100       # Débit binaire (bits/s) baud
 sample_rate = 44100  # Taux d'échantillonnage (Hz)
 Fe =  44100
 
 
 def from_text(text):
-    print("Hello World!")
-    Duration = 10
-    encoded = text_to_binary(text)
-    return encoded
+    return [int(bit) for c in text for bit in format(ord(c), '08b')]
+
+def binary_string_to_array(s):
+    return [int(c) for c in s]
 
 def from_audio(path : str):
     audio_data, sample_rate = sf.read('audio.wav')
@@ -22,13 +21,8 @@ def from_audio(path : str):
     return audio_data
     
 
-
-
-# 
-
-
-def text_to_binary(text) -> str:
-    return ''.join(format(ord(c), "08b") for c in text)
+def text_to_binary(text) -> list[int]:
+    return (''.join(format(ord(char), '08b') for char in text)).split()
 
 def binary_to_text(binary) -> str:
     return ''.join(chr(int(binary[i:i+8], 2)) for i in range(0, len(binary), 8)) 
@@ -41,33 +35,33 @@ def decode_nrz(signal : np.array) -> str:
     return ''.join('1' if bit == 1 else '0' for bit in signal)
 
 
-def porteuse(t : np.array) -> np.array:
-    return np.sin(2 * np.pi * carrier_freq * t)
-
-
-
-
 
 
 if __name__ == "__main__":
     Itype = "text"
     if Itype:
-        binary = from_text("Hello World!")
+        binary = from_text("Helloworld")
     else:
-        binary = from_audio("audio.wav");
+        binary = from_audio("audio.wav")
+    Nbis = len(binary)
+    Ns = int(sample_rate / bit_rate)    
+    N = Nbis * Ns
+    print(type (binary))
+    M_dupliquer = np.repeat(binary, Ns)
+    
+    t = np.linspace(0, N/Fe, N)
     
 
-    t = np.arange(0, len(binary) / sample_rate, 1/Fe)
+    Ap = 1 
+    Fp = 20000
+    Porteuse = P  = Ap*np.sin(2*np.pi*Fp*t)
 
-    nrz_encoded = encode_nrz(binary)
-    
-    print(nrz_encoded)
-    carrier = porteuse(t)
-    print(carrier)   
-    
-
-    ask_signal = nrz_encoded * carrier
-    plt.plot(t[:1000], ask_signal[:1000])
+    ASK = P * M_dupliquer
+    print(len(ASK), binary[0])
+    size = 1000
+    plt.plot(t[:size], ASK[:size])
     plt.show()
-    sf.write('ask_signal.wav', ask_signal, sample_rate)
-    
+    sf.write('ask_signal.wav', ASK, sample_rate)
+
+
+
