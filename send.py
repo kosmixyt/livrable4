@@ -27,12 +27,9 @@ def text_to_binary(text) -> list[int]:
 def binary_to_text(binary) -> str:
     return ''.join(chr(int(binary[i:i+8], 2)) for i in range(0, len(binary), 8)) 
 
-def encode_nrz(binary : str) -> np.array:
-    return np.array([1 if bit == '1' else -1 for bit in binary])
+def encode_nrz(binary: list[int]) -> np.array:
+    return np.array([1 if bit == 1 else -1 for bit in binary])
 
-
-def decode_nrz(signal : np.array) -> str:
-    return ''.join('1' if bit == 1 else '0' for bit in signal)
 
 
 
@@ -40,9 +37,10 @@ def decode_nrz(signal : np.array) -> str:
 if __name__ == "__main__":
     Itype = "text"
     if Itype:
-        binary = from_text("Helloworld")
+        binary = from_text("")
     else:
         binary = from_audio("audio.wav")
+    binary = encode_nrz(binary)
     Nbis = len(binary)
     Ns = int(sample_rate / bit_rate)    
     N = Nbis * Ns

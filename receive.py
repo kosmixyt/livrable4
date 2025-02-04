@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 # params 
-Fp = 2000
+Fp = 20000  # Ensure this matches the frequency used in send.py
 Fe = 44100
 bit_rate = 100
 def demodulate_ask(signal: np.array, carrier_freq: int, sample_rate: int) -> np.array:
@@ -13,25 +13,28 @@ def demodulate_ask(signal: np.array, carrier_freq: int, sample_rate: int) -> np.
     demodulated = signal * carrier
     return demodulated
 
-def decode_demodulated_signal(demodulated: np.array, bit_rate: int, sample_rate: int) -> str:
+def decode_demodulated_signal(demodulated: np.array, bit_rate: int, sample_rate: int) -> list[int]:
     Ns = int(sample_rate / bit_rate)
     bits = []
     for i in range(0, len(demodulated), Ns):
         bit_chunk = demodulated[i:i+Ns]
         bit = 1 if np.mean(bit_chunk) > 0 else 0
         bits.append(bit)
-    return ''.join(map(str, bits))
+    return bits
 
-def binary_to_text(binary) -> str:
-    binary = ''.join(binary)
-    return ''.join(chr(int(binary[i:i+8], 2)) for i in range(0, len(binary), 8))
+def decode_nrz(signal: np.array) -> list[int]:
+    return [1 if int(bit) > 0 else 0 for bit in signal]
+
+def binary_to_text(binary: list[int]) -> str:
+    binary_str = ''.join(map(str, binary))
+    return ''.join(chr(int(binary_str[i:i+8], 2)) for i in range(0, len(binary_str), 8))
 
 
 def main():
     ASK, sample_rate = sf.read('ask_signal.wav')
     demodulated_signal = demodulate_ask(ASK, Fp, sample_rate)
-    binary_string = decode_demodulated_signal(demodulated_signal, bit_rate, sample_rate)
-    decoded_text = binary_to_text(binary_string)
+    binary_list = decode_demodulated_signal(demodulated_signal, bit_rate, sample_rate)
+    decoded_text = binary_to_text(binary_list)
     print("Decoded text:", decoded_text)
     size = 1000
     t = np.arange(len(demodulated_signal)) / sample_rate
