@@ -1,4 +1,0 @@
-﻿-- logger module started --
-main: one instance mode ENABLED
-main: Lancement de vlc avec l’interface par défaut. Utiliser « cvlc » pour démarrer VLC sans interface.
--- logger module stopped --
