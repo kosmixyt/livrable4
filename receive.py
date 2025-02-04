@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 from scipy.signal import butter, lfilter
 
 # params 
-Fp = 30_000     # carrier frequency at 30 kHz
-bit_rate = 200  # bit rate 200 bits/s
-Fe = 96_000     # sample rate in Hz
+Fp = 30_000     # fréquence de la porteuse
+bit_rate = 200  # bit_rate = 200 bits/s
+Fe = 96_000     # Fe = 96 kHz
 
 def binary_to_text(binary: list[int]) -> str:
     binary_str = ''.join(map(str, binary))
@@ -33,18 +33,19 @@ def main():
         Res.append(np.trapz(segment, dx=1/Fe))
     # Determine each bit using a 0 threshold
     demodulated_bits = [1 if value > 0 else 0 for value in Res]
-
-    output_waveform = np.repeat(demodulated_bits, Ns)
-
-    # # # Normalize the waveform to the range [-1, 1]
-    output_waveform = 2 * (output_waveform - 0.5)
-    
-    sd.play(output_waveform, Fe)
-
+    print(demodulated_bits)
+    # Transformation du signal binaire en signal audio à 44100 Hz
+    new_Fe = 44100
+    Ns_audio = int(new_Fe / bit_rate)
+    # Map 0 -> -1, 1 -> 1 et doubler chaque bit en Ns_audio échantillons
+    audio_signal = np.repeat(np.array(demodulated_bits) * 2 - 1, Ns_audio).astype(np.float32)
+    print(audio_signal)
+    sd.play(audio_signal, new_Fe)
     sd.wait()
+
     
     # for text
-    chars = []
+    # chars = []
 
     # for i in range(0, len(demodulated_bits), 8):
     #     byte = demodulated_bits[i:i+8]
