@@ -46,10 +46,11 @@ if __name__ == "__main__":
         # on encode le signal en NRZ
         # binary = encode_nrz(binary)
         Nbits = len(binary)
-        Ns = int(Fe / bit_rate)
-        N = Nbits * Ns
-        M_dupliquer = np.repeat(binary, Ns)
-        t1 = np.linspace(0, N/Fe, N)
+        Ns = int(Fe/bit_rate)
+        N = Ns * Nbits
+        M_duplique = np.repeat(binary, Ns)
+        t1 = np.linspace(0, Ns/Fe, Ns)
+        t = np.linspace(0, N/Fe, N)
         A1 = 1
         A2 = 1
         fp1 = 500
@@ -62,10 +63,9 @@ if __name__ == "__main__":
                 FSK.extend(P1)
             else:
                 FSK.extend(P2)
-        
             
 
-    sf.write('ask_signal.wav', FSK, Fe)
+    sf.write('ask_signal.wav', np.array(FSK), Fe)
 
 
 

@@ -17,9 +17,9 @@ def binary_to_text(binary: list[int]) -> str:
 
 
 def main():
-    file, samplerate = sf.read("ask_signal.wav")
+    binary, samplerate = sf.read("ask_signal.wav")
     # assume samplerate now equals Fe=96000; otherwise, use Fe for consistency
-    N = len(file)
+    # N = len(file)
     # Ns = int(Fe / bit_rate)
     # t = np.arange(N) / Fe
     # carrier = np.sin(2 * np.pi * Fp * t)
@@ -31,38 +31,46 @@ def main():
     #         break
     #     # integrate the segment (using dx=1/Fe)
     #     Res.append(np.trapz(segment, dx=1/Fe))
+
+
+
+    # reception FSK
+
+    Ns = int(Fe/bit_rate)
+    # compute number of bits from total samples
+    Nbits = len(binary) // Ns
+    N = Ns * Nbits
+    M_duplique = np.repeat(binary, Ns)
+    t1 = np.linspace(0, Ns/Fe, Ns)
+    t = np.linspace(0, N/Fe, N)
     A1 = 1
     A2 = 1
     fp1 = 500
-    Ns = int(Fe / bit_rate)
     fp2 = 2000
-    t1 = np.linspace(0, N/Fe, N)
-    t = np.linspace(0, N/Fe, N)
     P1 = A1 * np.sin(2 * np.pi * fp1 * t1)
+    # use P1 for bit1
     P2 = A2 * np.sin(2 * np.pi * fp2 * t1)
-    Porteuse1 = np.tile(P1,N)
-    Porteuse2 = np.tile(P1,N)
-    bit1 = file * Porteuse1
-    bit0 = file * Porteuse2
+    Porteuse1 = np.tile(P1, Nbits)
+    # use P2 for bit0
+    Porteuse2 = np.tile(P2, Nbits)
+    bit1 = binary * Porteuse1
+    bit0 = binary * Porteuse2
     y1 = []
     y2 = []
     for i in range(0, N, Ns):
         y1.append(np.trapz(bit1[i:i+Ns]))
         y2.append(np.trapz(bit0[i:i+Ns]))
-    Res = []
-    for ii in range (0,len(y1)):
+    # Using thresholds for demodulation
+    message_demodule_fsk = []
+    for ii in range(len(y1)):
         if abs(y1[ii]) > abs(y2[ii]):
-            Res.extend([int(1)])
-        if abs(y1[ii]) <= abs(y2[ii]):
-            Res.extend([int(0)])
-
+            message_demodule_fsk.append(1)
+        else:
+            message_demodule_fsk.append(0)
+    #   
+    demodulated_bits = message_demodule_fsk
     
-
-    # Determine each bit using a 0 threshold
-    demodulated_bits = [1 if value > 0 else 0 for value in Res]
-    
-
-
+    # demodulated_bits = [1 if value > 0 else 0 for value in Res]
     # tableau de Caractères texte
     chars = []
     for i in range(0, len(demodulated_bits), 8):
