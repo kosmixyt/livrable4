@@ -5,14 +5,14 @@ import scipy.signal as signal
 
 
 bit_rate = 200       # Correct bit rate to 200 bits/s
-Fe = 96_000           # Update sample rate to 96 kHz for proper carrier synthesis
+Fe = 44100           # Update sample rate to Fe 44100 for proper carrier synthesis
 Ap = 1 
-Fp = 30_000  # set carrier frequency to 30 kHz (inaudible)
-
+Fp = 19*10^3  # set carrier frequency to 30 kHz (inaudible)
 def from_text(text):
     # conversion de texte en binare sur 8 bit
     #  itération du texte pour chaque caractère et conversion d'abords
-    # en ascii et après en binaire
+    # en ascii et après en binaire 
+    # on converti le bit en int car format retourne un string
     return [int(bit) for c in text for bit in format(ord(c), '08b')]
 
 
@@ -21,7 +21,7 @@ def from_audio(path : str):
     audio_data, sample_rate = sf.read('audio.wav')
     # si le fichier audio est en stéréo, on prend le canal gauche
     if len(audio_data.shape) > 1:
-        # récupère uniquement le canal gauche
+        # récupère uniquement le canal gauche car un seul canal est nécessaire
         audio_data = audio_data[:, 0]
         # on retourne l'audio et le taux d'échantillonnage
     return audio_data, sample_rate
@@ -29,13 +29,17 @@ def from_audio(path : str):
 
 # encodage NRZ (Non-Return-to-Zero)
 def encode_nrz(binary: list[int]) -> np.array:
-    # on itère le binaire et on remplace les 0 par -1
+    # on itère le binaire et on remplace les 0 par -1 
     return np.array([1 if bit == 1 else -1 for bit in binary])
 
 
 if __name__ == "__main__":
     # on demande à l'utilisateur de choisir le type de signal à envoyer
-    Itype = "text"
+
+    text = "Voulez-vous envoyer du texte ou un fichier audio ? (text/audio) : "
+    Itype = input(text)
+    while Itype not in ["text", "audio"]:
+        Itype = input(text)
     # si c'est du texte
     if Itype == "text":
         # texte à envoyer
@@ -57,26 +61,8 @@ if __name__ == "__main__":
         # on crée le signal ASK
         print(M_dupliquer)
         ASK = Porteuse * M_dupliquer
-    else:
-        # si l'utilisateur a choisi un fichier audio
-        # on récupère l'audio et le taux d'échantillonnage
-        audio, sample_rate = from_audio("audio.wav")
-        
-        # on calcule le nombre d'échantillons
-        Porteuse = Ap * np.sin(2 * np.pi * Fp * t)
-        ASK = Porteuse * audio
-        # on normalise l'audio entre -1 et 1
-        audio = audio / np.max(np.abs(audio))
-        # on quantifie l'audio en binaire
-        binary_audio = np.unpackbits(np.array(audio * 127, dtype=np.int8).view(np.uint8))
-        # on encode le signal en NRZ
-        binary_audio = encode_nrz(binary_audio)
-        # on duplique le signal binaire
-        M_dupliquer = np.repeat(binary_audio, int(Fe / bit_rate))
-        # on crée le signal ASK
-        ASK = Porteuse * M_dupliquer[:N]
 
-    # ...existing code for plotting...
+
     plt.plot(t[:1000], ASK[:1000])
     plt.show()
     sf.write('ask_signal.wav', ASK, Fe)
