@@ -42,30 +42,51 @@ if __name__ == "__main__":
         Itype = input(text)
     # si c'est du texte
     if Itype == "text":
-        # texte à envoyer
-        binary = from_text("amaury, j'adore ramsez le chat de feu vert")
+        binary = from_text("modulation de signal")
         # on encode le signal en NRZ
-        binary = encode_nrz(binary)
-        # on récupère le nombre de bits
-        Nbis = len(binary)
-        #  on calcule le nombre d'échantillons par bit
-        Ns = int(Fe / bit_rate)    
-        # on calcule le nombre total d'échantillons
-        N = Nbis * Ns
-        # on duplique le signal binaire
+        # binary = encode_nrz(binary)
+        Nbits = len(binary)
+        Ns = int(Fe / bit_rate)
+        N = Nbits * Ns
         M_dupliquer = np.repeat(binary, Ns)
-        # on crée le vecteur de temps
-        t = np.linspace(0, N/Fe, N, endpoint=False)
-        # on crée le signal porteuse
-        Porteuse = Ap * np.sin(2 * np.pi * Fp * t)
-        # on crée le signal ASK
-        print(M_dupliquer)
-        ASK = Porteuse * M_dupliquer
+        t1 = np.linspace(0, N/Fe, N)
+        A1 = 1
+        A2 = 1
+        fp1 = 500
+        fp2 = 2000
+        P1 = A1 * np.sin(2 * np.pi * fp1 * t1)
+        P2 = A2 * np.sin(2 * np.pi * fp2 * t1)
+        FSK = []
+        for i in binary:
+            if i == 1:
+                FSK.extend(P1)
+            else:
+                FSK.extend(P2)
+        
+            
+
+    sf.write('ask_signal.wav', FSK, Fe)
 
 
-    plt.plot(t[:1000], ASK[:1000])
-    plt.show()
-    sf.write('ask_signal.wav', ASK, Fe)
 
 
-
+        # 
+        # # texte à envoyer
+        # binary = from_text("amaury, j'adore ramsez le chat de feu vert")
+        # # on encode le signal en NRZ
+        # binary = encode_nrz(binary)
+        # # on récupère le nombre de bits
+        # Nbis = len(binary)
+        # #  on calcule le nombre d'échantillons par bit
+        # Ns = int(Fe / bit_rate)    
+        # # on calcule le nombre total d'échantillons
+        # N = Nbis * Ns
+        # # on duplique le signal binaire
+        # M_dupliquer = np.repeat(binary, Ns)
+        # # on crée le vecteur de temps
+        # t = np.linspace(0, N/Fe, N)
+        # # on crée le signal porteuse
+        # Porteuse = Ap * np.sin(2 * np.pi * Fp * t)
+        # # on crée le signal ASK
+        # print(M_dupliquer)
+        # ASK = Porteuse * M_dupliquer
