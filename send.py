@@ -7,7 +7,7 @@ import scipy.signal as signal
 bit_rate = 200       # Correct bit rate to 200 bits/s
 Fe = 44100           # Update sample rate to Fe 44100 for proper carrier synthesis
 Ap = 1 
-Fp = 19*10^3  # set carrier frequency to 30 kHz (inaudible)
+Fp = 10  # set carrier frequency to 30 kHz (inaudible)
 def from_text(text):
     # conversion de texte en binare sur 8 bit
     #  itération du texte pour chaque caractère et conversion d'abords
@@ -35,16 +35,14 @@ def encode_nrz(binary: list[int]) -> np.array:
 
 if __name__ == "__main__":
     # on demande à l'utilisateur de choisir le type de signal à envoyer
-
-    text = "Voulez-vous envoyer du texte ou un fichier audio ? (text/audio) : "
-    Itype = input(text)
-    while Itype not in ["text", "audio"]:
-        Itype = input(text)
-    # si c'est du texte
-    if Itype == "text":
-        binary = from_text("modulation de signal")
-        # on encode le signal en NRZ
-        # binary = encode_nrz(binary)
+    binary = from_text(input("Texte à envoyer : "))
+    ModulationText = "Quel de Type de modulation voulez vous faire"
+    modulation = ""
+    while modulation not in ["ASK", "FSK"]:
+        modulation = input(ModulationText)
+    OUTPUT = []
+    binary = encode_nrz(binary)
+    if modulation == "FSK":
         Nbits = len(binary)
         Ns = int(Fe/bit_rate)
         N = Ns * Nbits
@@ -57,15 +55,29 @@ if __name__ == "__main__":
         fp2 = 2000
         P1 = A1 * np.sin(2 * np.pi * fp1 * t1)
         P2 = A2 * np.sin(2 * np.pi * fp2 * t1)
-        FSK = []
+        OUTPUT = []
         for i in binary:
             if i == 1:
-                FSK.extend(P1)
+                OUTPUT.extend(P1)
             else:
-                FSK.extend(P2)
-            
-
-    sf.write('ask_signal.wav', np.array(FSK), Fe)
+                OUTPUT.extend(P2)   
+    elif modulation == "ASK":
+        Nbis = len(binary)
+        #  on calcule le nombre d'échantillons par bit
+        Ns = int(Fe / bit_rate)    
+        # on calcule le nombre total d'échantillons
+        N = Nbis * Ns
+        # on duplique le signal binaire
+        M_dupliquer = np.repeat(binary, Ns)
+        # on crée le vecteur de temps
+        t = np.linspace(0, N/Fe, N)
+        # on crée le signal porteuse
+        Porteuse = Ap * np.sin(2 * np.pi * Fp * t)
+        # on crée le signal ASK
+        print(M_dupliquer)
+        OUTPUT = Porteuse * M_dupliquer
+    print("ASK signal generated in ask_signal.wav" )
+    sf.write('ask_signal.wav', OUTPUT, Fe)
 
 
 
